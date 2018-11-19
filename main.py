@@ -20,7 +20,7 @@ def main():
     wnd = glutCreateWindow('OpenGL 4')
     
     # model = Model(*icosphere(6))
-    model = Model(*sphere(960, 480))
+    model = Model(*sphere(480, 240))
     cam = Camera(sensivity=0.1)
 
     program = Program(vertex='vertex.glsl',

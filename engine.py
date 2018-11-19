@@ -26,7 +26,8 @@ class Engine:
         self.adaptive_tess = True
         self.grid = True
         self.normals = False
-        hires = True
+        self.bump = False
+        hires = False
 
         self.vao = glGenVertexArrays(1)
         self.vbo, self.ebo = glGenBuffers(2)
@@ -52,7 +53,7 @@ class Engine:
         glEnable(GL_DEPTH_TEST)
 
         self.load_height_texture(hires)
-        self.load_surface_texture(False and hires)
+        self.load_surface_texture(hires)
 
         glClearColor(0.1, 0.1, 0.1, 1.0);
 
@@ -164,6 +165,7 @@ class Engine:
             self.program.set_uniform_int("adaptive_tess", 1 if self.adaptive_tess else 0)
             self.program.set_uniform_int("grid", 1 if self.grid else 0)
             self.program.set_uniform_int("normals", 1 if self.normals else 0)
+            self.program.set_uniform_int("bump", 1 if self.bump else 0)
 
             glBindVertexArray(self.vao)
             glPatchParameteri(GL_PATCH_VERTICES, 3)
@@ -198,6 +200,8 @@ class Engine:
             self.grid = not self.grid
         if key == b'n':
             self.normals = not self.normals
+        if key == b'b':
+            self.bump = not self.bump
 
     def update_delta(self, button, dx, dy):
         # Called on mouse move with button pressed
