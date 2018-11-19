@@ -8,7 +8,8 @@ from engine import Engine
 from model import Model
 from camera import Camera
 from program import Program
-from icosphere import icosphere
+#from icosphere import icosphere
+from sphere import sphere
 
 def main():
     glutInit()
@@ -18,7 +19,8 @@ def main():
     glutInitContextProfile(GLUT_CORE_PROFILE)
     wnd = glutCreateWindow('OpenGL 4')
     
-    model = Model(*icosphere(6))
+    # model = Model(*icosphere(6))
+    model = Model(*sphere(960, 480))
     cam = Camera(sensivity=0.1)
 
     program = Program(vertex='vertex.glsl',

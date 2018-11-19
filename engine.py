@@ -23,6 +23,10 @@ class Engine:
         self.dist = 0
         self.wireframe = False
         self.update_wireframe()
+        self.adaptive_tess = True
+        self.grid = True
+        self.normals = False
+        hires = True
 
         self.vao = glGenVertexArrays(1)
         self.vbo, self.ebo = glGenBuffers(2)
@@ -47,9 +51,8 @@ class Engine:
         glDepthFunc(GL_LESS)
         glEnable(GL_DEPTH_TEST)
 
-        hires = False
         self.load_height_texture(hires)
-        self.load_surface_texture(hires)
+        self.load_surface_texture(False and hires)
 
         glClearColor(0.1, 0.1, 0.1, 1.0);
 
@@ -69,6 +72,7 @@ class Engine:
 
         for tex, data in zip((surfwest, surfeast), (west_bytes, east_bytes)):
             glBindTexture(GL_TEXTURE_2D, tex)
+            print('glTexImage2D(surface)')
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width//2, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data)
             glGenerateMipmap(GL_TEXTURE_2D);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT)
@@ -80,6 +84,7 @@ class Engine:
         del east_bytes
         del image
         glBindTexture(GL_TEXTURE_2D, 0)
+        print('load_surface_texture done')
 
     def load_height_texture(self, hires=False):
         image = Image.open('elev_21600x10800.png' if hires else 'elev_10800x5400.png')
@@ -97,6 +102,7 @@ class Engine:
 
         for tex, data in zip((westtex, easttex), (west_bytes, east_bytes)):
             glBindTexture(GL_TEXTURE_2D, tex)
+            print('glTexImage2D(height)')
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width//2, height, 0, GL_RED, GL_UNSIGNED_BYTE, data)
             glGenerateMipmap(GL_TEXTURE_2D);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
@@ -108,6 +114,7 @@ class Engine:
         del east_bytes
         del image
         glBindTexture(GL_TEXTURE_2D, 0)
+        print('load_height_texture done')
 
     def update_wireframe(self):
         if self.wireframe:
@@ -154,6 +161,10 @@ class Engine:
             self.program.set_uniform_mat("modelrot", self.model.total_rotation())
             self.program.set_uniform_mat("viewrot", self.cam.total_rotation())
 
+            self.program.set_uniform_int("adaptive_tess", 1 if self.adaptive_tess else 0)
+            self.program.set_uniform_int("grid", 1 if self.grid else 0)
+            self.program.set_uniform_int("normals", 1 if self.normals else 0)
+
             glBindVertexArray(self.vao)
             glPatchParameteri(GL_PATCH_VERTICES, 3)
             glDrawElements(GL_PATCHES, self.model.triangles.size, GL_UNSIGNED_INT, None)
@@ -181,6 +192,12 @@ class Engine:
             self.cam.reset()
         if key == b'r':
             self.model.reset()
+        if key == b't':
+            self.adaptive_tess = not self.adaptive_tess
+        if key == b'g':
+            self.grid = not self.grid
+        if key == b'n':
+            self.normals = not self.normals
 
     def update_delta(self, button, dx, dy):
         # Called on mouse move with button pressed
@@ -207,7 +224,7 @@ class Engine:
             # Handle wheel
             if button == 3 and self.dist > -50:
                 self.dist -= 1
-            if button == 4 and self.dist < 20:
+            if button == 4 and self.dist < 10:
                 self.dist += 1
         else:  # released
             self.mouse_button_pressed[button] = False

@@ -31,6 +31,6 @@ class Model(Rotatable):
         z = pts[:, 2:3]
         # SP (0, 0, -1) - lat = -90 deg, NP (0, 0, 1) - lat = 90 deg
         lat = np.arcsin(z) / (np.pi / 2)
-        lon = np.arctan2(y + x, x - y) / np.pi
+        lon = np.arctan2(y, x) / np.pi
         self.vertices = np.hstack((pts, lon, lat))
         self.triangles = tri
