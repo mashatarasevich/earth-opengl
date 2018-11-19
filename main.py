@@ -30,7 +30,8 @@ def main():
                       fragment='fragment.glsl')
     engine = Engine(wnd, program, model, cam)
 
-    glutIdleFunc(engine.display)
+    glutDisplayFunc(engine.display)
+    glutIdleFunc(glutPostRedisplay)
     glutReshapeFunc(engine.reshape)
     glutKeyboardFunc(engine.keyDown)
     glutKeyboardUpFunc(engine.keyUp)
