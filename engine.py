@@ -27,7 +27,7 @@ class Engine:
         self.grid = True
         self.normals = False
         self.bump = False
-        hires = False
+        hires = True
 
         self.vao = glGenVertexArrays(1)
         self.vbo, self.ebo = glGenBuffers(2)
@@ -61,11 +61,14 @@ class Engine:
         image = Image.open('topo_21600x10800.png' if hires else 'topo_10800x5400.png')
         width, height = image.size
 
-        west = image.crop((0, 0, width // 2, height))
-        east = image.crop((width // 2, 0, width, height))
+        data = np.frombuffer(image.tobytes("raw", "RGB", 0, -1), dtype=np.uint8)
+        del image
+        data = data.reshape(height, width, 3)
 
-        west_bytes = west.tobytes("raw", "RGB", 0, -1)
-        east_bytes = east.tobytes("raw", "RGB", 0, -1)
+        west_bytes = data[:, :width//2, :].flatten()
+        east_bytes = data[:, width//2:, :].flatten()
+
+        del data
 
         surfeast, surfwest = glGenTextures(2)
         self.surfwest = surfwest
@@ -83,7 +86,6 @@ class Engine:
 
         del west_bytes
         del east_bytes
-        del image
         glBindTexture(GL_TEXTURE_2D, 0)
         print('load_surface_texture done')
 
@@ -91,11 +93,14 @@ class Engine:
         image = Image.open('elev_21600x10800.png' if hires else 'elev_10800x5400.png')
         width, height = image.size
 
-        west = image.crop((0, 0, width // 2, height))
-        east = image.crop((width // 2, 0, width, height))
+        data = np.frombuffer(image.tobytes("raw", "L", 0, -1), dtype=np.uint8)
+        del image
+        data = data.reshape(height, width)
 
-        west_bytes = west.tobytes("raw", "L", 0, -1)
-        east_bytes = east.tobytes("raw", "L", 0, -1)
+        west_bytes = data[:, :width//2].flatten()
+        east_bytes = data[:, width//2:].flatten()
+
+        del data
 
         westtex, easttex = glGenTextures(2)
         self.westtex = westtex
@@ -113,7 +118,6 @@ class Engine:
 
         del west_bytes
         del east_bytes
-        del image
         glBindTexture(GL_TEXTURE_2D, 0)
         print('load_height_texture done')
 
